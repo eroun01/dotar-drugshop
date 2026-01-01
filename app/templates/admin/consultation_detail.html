@@ -1,0 +1,127 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Consultation #{{ consultation.id }} - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-chat-dots"></i> Consultation #{{ consultation.id }}</h4>
+        <p class="text-muted mb-0">{{ consultation.subject }}</p>
+    </div>
+    <a href="{{ url_for('admin.consultations') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Patient Info -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="30%">Name:</th>
+                        <td>{{ consultation.patient.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ consultation.patient.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Phone:</th>
+                        <td>{{ consultation.patient.phone or 'Not provided' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Priority:</th>
+                        <td><span class="priority-{{ consultation.priority }} fw-bold">{{ consultation.priority|title }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td><span class="badge badge-{{ consultation.status }}">{{ consultation.status|replace('_', ' ')|title }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Submitted:</th>
+                        <td>{{ consultation.created_at.strftime('%B %d, %Y at %H:%M') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Consultation Details -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-pulse"></i> Consultation Details</h5>
+            </div>
+            <div class="card-body">
+                <h6>Symptoms:</h6>
+                <p class="border-start border-3 border-primary ps-3">{{ consultation.symptoms }}</p>
+                
+                <h6>Additional Details:</h6>
+                <p class="border-start border-3 border-info ps-3">{{ consultation.message }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Response Form -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-reply"></i> Your Response</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Response *</label>
+                        {{ form.response(class="form-control", rows="5", placeholder="Provide your professional advice...") }}
+                        {% for error in form.response.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Recommended Drugs</label>
+                        {{ form.recommended_drugs(class="form-control", rows="3", placeholder="List recommended drugs with dosage instructions...") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Update Status</label>
+                        {{ form.status(class="form-select") }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Send Response
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Previous Response -->
+        {% if consultation.response %}
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Previous Response</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ consultation.response }}</p>
+                
+                {% if consultation.recommended_drugs %}
+                <h6>Recommended Drugs:</h6>
+                <p class="mb-0">{{ consultation.recommended_drugs }}</p>
+                {% endif %}
+                
+                <hr>
+                <small class="text-muted">
+                    Responded by {{ consultation.responder.full_name if consultation.responder else 'Unknown' }}
+                    on {{ consultation.responded_at.strftime('%B %d, %Y at %H:%M') if consultation.responded_at else '' }}
+                </small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

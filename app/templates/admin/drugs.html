@@ -1,0 +1,134 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Manage Drugs - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-capsule"></i> Drug Inventory</h4>
+        <p class="text-muted mb-0">Manage your drug inventory</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i> Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('admin.export_drugs') }}"><i class="bi bi-download"></i> Export CSV</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.import_drugs') }}"><i class="bi bi-upload"></i> Import CSV</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.print_drugs') }}" target="_blank"><i class="bi bi-printer"></i> Print Report</a></li>
+            </ul>
+        </div>
+        <a href="{{ url_for('admin.add_drug') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Drug
+        </a>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-10">
+                <input type="text" name="search" class="form-control" placeholder="Search drugs by name..." value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Drugs Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Strength</th>
+                        <th>Price (UGX)</th>
+                        <th>Stock</th>
+                        <th>Expiry</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drug in drugs.items %}
+                    <tr class="{{ 'table-warning' if drug.quantity_in_stock <= drug.reorder_level else '' }}">
+                        <td>
+                            <strong>{{ drug.name }}</strong>
+                            {% if drug.requires_prescription %}
+                                <span class="badge bg-danger ms-1">Rx</span>
+                            {% endif %}
+                            <br><small class="text-muted">{{ drug.generic_name or '' }}</small>
+                        </td>
+                        <td>{{ drug.category|title if drug.category else '-' }}</td>
+                        <td>{{ drug.strength or '-' }}</td>
+                        <td>{{ "{:,.0f}".format(drug.unit_price) }}</td>
+                        <td>
+                            {% if drug.quantity_in_stock <= drug.reorder_level %}
+                                <span class="text-danger fw-bold">{{ drug.quantity_in_stock }}</span>
+                                <i class="bi bi-exclamation-circle text-danger"></i>
+                            {% else %}
+                                {{ drug.quantity_in_stock }}
+                            {% endif %}
+                        </td>
+                        <td>{{ drug.expiry_date.strftime('%b %Y') if drug.expiry_date else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_drug', id=drug.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_drug', id=drug.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this drug?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No drugs found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if drugs.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if drugs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.drugs', page=drugs.prev_num, search=search) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in drugs.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == drugs.page else '' }}">
+                            <a class="page-link" href="{{ url_for('admin.drugs', page=page_num, search=search) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if drugs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.drugs', page=drugs.next_num, search=search) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

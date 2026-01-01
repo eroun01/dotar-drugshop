@@ -1,0 +1,109 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Consultations - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h4><i class="bi bi-chat-dots"></i> Patient Consultations</h4>
+    <p class="text-muted mb-0">Manage and respond to patient inquiries</p>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="pending" {{ 'selected' if status == 'pending' }}>Pending</option>
+                    <option value="in_progress" {{ 'selected' if status == 'in_progress' }}>In Progress</option>
+                    <option value="resolved" {{ 'selected' if status == 'resolved' }}>Resolved</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Consultations List -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Patient</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consult in consultations.items %}
+                    <tr>
+                        <td>{{ consult.id }}</td>
+                        <td>
+                            <strong>{{ consult.patient.full_name }}</strong><br>
+                            <small class="text-muted">{{ consult.patient.phone or consult.patient.email }}</small>
+                        </td>
+                        <td>{{ consult.subject[:40] }}{% if consult.subject|length > 40 %}...{% endif %}</td>
+                        <td><span class="priority-{{ consult.priority }}">{{ consult.priority|title }}</span></td>
+                        <td>
+                            <span class="badge badge-{{ consult.status }}">
+                                {{ consult.status|replace('_', ' ')|title }}
+                            </span>
+                        </td>
+                        <td>{{ consult.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.view_consultation', id=consult.id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No consultations found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if consultations.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if consultations.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.consultations', page=consultations.prev_num, status=status) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in consultations.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == consultations.page else '' }}">
+                            <a class="page-link" href="{{ url_for('admin.consultations', page=page_num, status=status) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if consultations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.consultations', page=consultations.next_num, status=status) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

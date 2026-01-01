@@ -1,0 +1,107 @@
+{% extends "patient/base_patient.html" %}
+
+{% block title %}Consultation #{{ consultation.id }} - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block patient_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-chat-dots"></i> Consultation #{{ consultation.id }}</h4>
+        <p class="text-muted mb-0">{{ consultation.subject }}</p>
+    </div>
+    <a href="{{ url_for('patient.my_consultations') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- My Consultation -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> My Consultation</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <span class="priority-{{ consultation.priority }} fw-bold">{{ consultation.priority|title }} Priority</span>
+                    </div>
+                    <div>
+                        <span class="badge badge-{{ consultation.status }}">{{ consultation.status|replace('_', ' ')|title }}</span>
+                    </div>
+                </div>
+                
+                <h6><i class="bi bi-clipboard-pulse"></i> Symptoms:</h6>
+                <div class="border-start border-3 border-primary ps-3 mb-3 bg-light p-2 rounded">
+                    {{ consultation.symptoms }}
+                </div>
+                
+                <h6><i class="bi bi-file-text"></i> Additional Details:</h6>
+                <div class="border-start border-3 border-info ps-3 bg-light p-2 rounded">
+                    {{ consultation.message }}
+                </div>
+                
+                <hr>
+                <small class="text-muted">
+                    <i class="bi bi-calendar"></i> Submitted on {{ consultation.created_at.strftime('%B %d, %Y at %H:%M') }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Response -->
+        {% if consultation.response %}
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Professional Response</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ consultation.response }}
+                </div>
+                
+                {% if consultation.recommended_drugs %}
+                <hr>
+                <h6><i class="bi bi-capsule"></i> Recommended Medications:</h6>
+                <div class="bg-light p-3 rounded">
+                    {{ consultation.recommended_drugs }}
+                </div>
+                {% endif %}
+                
+                <hr>
+                <small class="text-muted">
+                    <i class="bi bi-person-badge"></i> 
+                    Responded by {{ consultation.responder.full_name if consultation.responder else 'Healthcare Professional' }}
+                    <br>
+                    <i class="bi bi-calendar-check"></i>
+                    {{ consultation.responded_at.strftime('%B %d, %Y at %H:%M') if consultation.responded_at else '' }}
+                </small>
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-warning">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Awaiting Response</h5>
+            </div>
+            <div class="card-body text-center py-5">
+                <i class="bi bi-clock text-warning" style="font-size: 4rem;"></i>
+                <p class="mt-3 text-muted">Your consultation is being reviewed by our healthcare professionals.</p>
+                <p class="small text-muted mb-0">You will receive a response soon. Please check back later.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="card mt-4">
+    <div class="card-body d-flex justify-content-between">
+        <a href="{{ url_for('patient.my_consultations') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Consultations
+        </a>
+        <a href="{{ url_for('patient.consult') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Consultation
+        </a>
+    </div>
+</div>
+{% endblock %}

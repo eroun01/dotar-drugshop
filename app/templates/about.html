@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body p-5">
+                    <h1 class="text-center mb-4">
+                        <i class="bi bi-info-circle text-primary"></i> About {{ shop_settings.shop_name }}
+                    </h1>
+                    
+                    <p class="lead text-center text-muted mb-5">
+                        {{ shop_settings.shop_tagline or 'Your trusted healthcare partner' }}
+                    </p>
+                    
+                    <h4><i class="bi bi-bullseye text-primary"></i> Our Mission</h4>
+                    <p>{{ shop_settings.mission_text or 'To provide accessible, affordable, and quality pharmaceutical care to our community while ensuring the highest standards of patient safety and satisfaction.' }}</p>
+                    
+                    <h4 class="mt-4"><i class="bi bi-eye text-primary"></i> Our Vision</h4>
+                    <p>{{ shop_settings.vision_text or 'To be the leading community pharmacy known for excellence in patient care, innovation in healthcare delivery, and commitment to community health.' }}</p>
+                    
+                    <h4 class="mt-4"><i class="bi bi-heart text-primary"></i> Our Values</h4>
+                    <ul>
+                        <li><strong>Integrity:</strong> We uphold the highest ethical standards in all our operations.</li>
+                        <li><strong>Compassion:</strong> We treat every patient with empathy and understanding.</li>
+                        <li><strong>Excellence:</strong> We strive for excellence in every aspect of our service.</li>
+                        <li><strong>Innovation:</strong> We embrace technology to improve healthcare delivery.</li>
+                    </ul>
+                    
+                    <h4 class="mt-4"><i class="bi bi-telephone text-primary"></i> Contact Us</h4>
+                    <p>
+                        <strong>Address:</strong> {{ shop_settings.shop_address }}<br>
+                        <strong>Phone:</strong> {{ shop_settings.shop_phone }}<br>
+                        <strong>Email:</strong> {{ shop_settings.shop_email }}<br>
+                        <strong>Hours:</strong> {{ shop_settings.shop_hours }}
+                    </p>
+                    
+                    <div class="text-center mt-5">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

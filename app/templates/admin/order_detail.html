@@ -1,0 +1,235 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Order #{{ order.id }} - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-bag-check"></i> Order #{{ order.id }}</h4>
+        <p class="text-muted mb-0">
+            {{ order.created_at.strftime('%B %d, %Y at %H:%M') }}
+            {% if order.condition_severity == 'critical' %}
+                <span class="badge bg-danger ms-2">CRITICAL - URGENT DELIVERY</span>
+            {% elif order.condition_severity == 'severe' %}
+                <span class="badge bg-warning text-dark ms-2">SEVERE - PRIORITY</span>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('admin.orders') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Orders
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Patient & Contact -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ order.patient.full_name }}</p>
+                        <p><strong>Email:</strong> {{ order.patient.email }}</p>
+                        <p><strong>Phone:</strong> {{ order.patient.phone or 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Delivery Phone:</strong> <span class="text-primary fw-bold">{{ order.delivery_phone }}</span></p>
+                        <p><strong>Condition:</strong> {{ order.disease_condition }}</p>
+                        <p><strong>Severity:</strong> 
+                            <span class="badge {{ 'bg-danger' if order.condition_severity == 'critical' else 'bg-warning text-dark' if order.condition_severity == 'severe' else 'bg-info' if order.condition_severity == 'normal' else 'bg-secondary' }}">
+                                {{ order.condition_severity|title }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                {% if order.symptoms_description %}
+                <hr>
+                <p><strong>Symptoms:</strong></p>
+                <div class="bg-light p-3 rounded">{{ order.symptoms_description }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Delivery Location -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Delivery Location</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if order.delivery_district %}
+                        <p><strong>District:</strong> {{ order.delivery_district|title }}</p>
+                        {% endif %}
+                        {% if order.delivery_sector %}
+                        <p><strong>Division/Subcounty:</strong> {{ order.delivery_sector }}</p>
+                        {% endif %}
+                        {% if order.delivery_cell %}
+                        <p><strong>Parish/Village:</strong> {{ order.delivery_cell }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if order.location_landmark %}
+                        <p><strong>Landmark:</strong> {{ order.location_landmark }}</p>
+                        {% endif %}
+                        <p><strong>Phone:</strong> <a href="tel:{{ order.delivery_phone }}">{{ order.delivery_phone }}</a></p>
+                    </div>
+                </div>
+                <hr>
+                <p><strong>Full Address:</strong></p>
+                <div class="bg-warning-subtle p-3 rounded border border-warning">
+                    <i class="bi bi-geo-alt-fill text-warning"></i> {{ order.delivery_address }}
+                </div>
+                {% if order.delivery_notes %}
+                <p class="mt-3"><strong>Delivery Instructions:</strong></p>
+                <div class="bg-light p-3 rounded">{{ order.delivery_notes }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Medicine Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-capsule"></i> Medicine Order</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="30%">Medicine:</th>
+                        <td>
+                            <strong>{{ order.drug.name }}</strong>
+                            {% if order.drug.requires_prescription %}<span class="badge bg-danger ms-1">Rx</span>{% endif %}
+                            <br><small class="text-muted">{{ order.drug.generic_name or '' }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Strength:</th>
+                        <td>{{ order.drug.strength or 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Quantity:</th>
+                        <td><strong>{{ order.quantity }}</strong> units</td>
+                    </tr>
+                    <tr>
+                        <th>Unit Price:</th>
+                        <td>UGX {{ "{:,.0f}".format(order.unit_price) }}</td>
+                    </tr>
+                    <tr class="table-success">
+                        <th>Total Amount:</th>
+                        <td><strong class="h5 text-success">UGX {{ "{:,.0f}".format(order.total_amount) }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Update Status Form -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> Manage Order</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Order Status</label>
+                        {{ form.order_status(class="form-select") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Status</label>
+                        {{ form.payment_status(class="form-select") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Amount Received (UGX)</label>
+                        {{ form.payment_amount_received(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Admin Notes</label>
+                        {{ form.admin_notes(class="form-control", rows="3", placeholder="Internal notes...") }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-check-circle"></i> Update Order
+                    </button>
+                </form>
+                
+                {% if order.order_status not in ['delivered', 'cancelled'] %}
+                <form method="POST" action="{{ url_for('admin.cancel_order', id=order.id) }}" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-x-circle"></i> Cancel Order
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Current Status -->
+        <div class="card mb-4 {{ 'border-success' if order.payment_status == 'paid' else 'border-warning' }}">
+            <div class="card-header {{ 'bg-success text-white' if order.payment_status == 'paid' else 'bg-warning' }}">
+                <h5 class="mb-0"><i class="bi bi-cash-coin"></i> Payment Status</h5>
+            </div>
+            <div class="card-body text-center">
+                <h3>UGX {{ "{:,.0f}".format(order.total_amount) }}</h3>
+                {% if order.payment_status == 'paid' %}
+                    <span class="badge bg-success fs-6">PAID</span>
+                    <p class="small text-muted mt-2 mb-0">
+                        Received: UGX {{ "{:,.0f}".format(order.payment_amount_received or 0) }}<br>
+                        {% if order.payment_received_at %}On {{ order.payment_received_at.strftime('%b %d, %Y %H:%M') }}{% endif %}
+                    </p>
+                {% else %}
+                    <span class="badge bg-warning text-dark fs-6">PENDING - COD</span>
+                    <p class="small text-muted mt-2 mb-0">Cash on Delivery</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Timeline -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Order Timeline</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                        <i class="bi bi-circle-fill text-success me-2" style="font-size: 8px;"></i>
+                        <strong>Order Placed</strong><br>
+                        <small class="text-muted ms-3">{{ order.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+                    </li>
+                    {% if order.confirmed_at %}
+                    <li class="mb-3">
+                        <i class="bi bi-circle-fill text-info me-2" style="font-size: 8px;"></i>
+                        <strong>Confirmed</strong><br>
+                        <small class="text-muted ms-3">{{ order.confirmed_at.strftime('%b %d, %Y %H:%M') }}</small>
+                    </li>
+                    {% endif %}
+                    {% if order.delivered_at %}
+                    <li class="mb-3">
+                        <i class="bi bi-circle-fill text-success me-2" style="font-size: 8px;"></i>
+                        <strong>Delivered</strong><br>
+                        <small class="text-muted ms-3">{{ order.delivered_at.strftime('%b %d, %Y %H:%M') }}</small>
+                    </li>
+                    {% endif %}
+                    {% if order.payment_received_at %}
+                    <li>
+                        <i class="bi bi-circle-fill text-success me-2" style="font-size: 8px;"></i>
+                        <strong>Payment Received</strong><br>
+                        <small class="text-muted ms-3">{{ order.payment_received_at.strftime('%b %d, %Y %H:%M') }}</small>
+                        {% if order.payment_receiver %}
+                        <br><small class="text-muted ms-3">By {{ order.payment_receiver.full_name }}</small>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

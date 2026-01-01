@@ -1,0 +1,96 @@
+{% extends "patient/base_patient.html" %}
+
+{% block title %}My Consultations - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block patient_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-journal-text"></i> My Consultations</h4>
+        <p class="text-muted mb-0">View all your consultation history</p>
+    </div>
+    <a href="{{ url_for('patient.consult') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> New Consultation
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if consultations.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consult in consultations.items %}
+                    <tr>
+                        <td>{{ consult.id }}</td>
+                        <td>
+                            <strong>{{ consult.subject[:40] }}{% if consult.subject|length > 40 %}...{% endif %}</strong>
+                        </td>
+                        <td><span class="priority-{{ consult.priority }}">{{ consult.priority|title }}</span></td>
+                        <td>
+                            <span class="badge badge-{{ consult.status }}">
+                                {{ consult.status|replace('_', ' ')|title }}
+                            </span>
+                        </td>
+                        <td>{{ consult.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('patient.view_consultation', id=consult.id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if consultations.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if consultations.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('patient.my_consultations', page=consultations.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in consultations.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == consultations.page else '' }}">
+                            <a class="page-link" href="{{ url_for('patient.my_consultations', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if consultations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('patient.my_consultations', page=consultations.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-chat-dots text-muted" style="font-size: 4rem;"></i>
+            <p class="text-muted mt-3">You haven't made any consultations yet.</p>
+            <a href="{{ url_for('patient.consult') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Start Your First Consultation
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

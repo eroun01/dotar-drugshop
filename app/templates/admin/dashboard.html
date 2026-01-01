@@ -1,0 +1,161 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Admin Dashboard - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h4><i class="bi bi-speedometer2"></i> Dashboard</h4>
+    <p class="text-muted mb-0">Welcome back, {{ current_user.full_name }}!</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Total Drugs</h6>
+                    <h2 class="mb-0">{{ total_drugs }}</h2>
+                </div>
+                <i class="bi bi-capsule stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Low Stock Alert</h6>
+                    <h2 class="mb-0 text-warning">{{ low_stock_drugs }}</h2>
+                </div>
+                <i class="bi bi-exclamation-triangle stat-icon text-warning"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card danger">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Pending Consults</h6>
+                    <h2 class="mb-0 text-danger">{{ pending_consultations }}</h2>
+                </div>
+                <i class="bi bi-chat-dots stat-icon text-danger"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Today's Sales</h6>
+                    <h2 class="mb-0 text-success">UGX {{ "{:,.0f}".format(today_sales) }}</h2>
+                </div>
+                <i class="bi bi-cash-stack stat-icon text-success"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Sales -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="bi bi-calendar3"></i> Monthly Revenue</h5>
+                <h2 class="text-primary">UGX {{ "{:,.0f}".format(monthly_sales) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <a href="{{ url_for('admin.add_drug') }}" class="btn btn-primary w-100 py-3">
+            <i class="bi bi-plus-circle"></i><br>Add New Drug
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin.new_sale') }}" class="btn btn-success w-100 py-3">
+            <i class="bi bi-cart-plus"></i><br>New Sale
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin.consultations') }}?status=pending" class="btn btn-warning w-100 py-3">
+            <i class="bi bi-chat-text"></i><br>View Pending Consults
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin.reports') }}" class="btn btn-info w-100 py-3 text-white">
+            <i class="bi bi-graph-up"></i><br>View Reports
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Consultations -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Recent Consultations</h5>
+                <a href="{{ url_for('admin.consultations') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_consultations %}
+                    <div class="list-group list-group-flush">
+                        {% for consult in recent_consultations %}
+                        <a href="{{ url_for('admin.view_consultation', id=consult.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ consult.subject[:30] }}{% if consult.subject|length > 30 %}...{% endif %}</strong>
+                                <span class="badge badge-{{ consult.status }}">{{ consult.status|replace('_', ' ')|title }}</span>
+                            </div>
+                            <small class="text-muted">{{ consult.patient.full_name }} - {{ consult.created_at.strftime('%b %d, %H:%M') }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center my-4">No consultations yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Sales -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-receipt"></i> Recent Sales</h5>
+                <a href="{{ url_for('admin.sales') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_sales %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Drug</th>
+                                    <th>Qty</th>
+                                    <th>Amount</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td>{{ sale.drug.name[:20] }}</td>
+                                    <td>{{ sale.quantity }}</td>
+                                    <td>UGX {{ "{:,.0f}".format(sale.total_amount) }}</td>
+                                    <td>{{ sale.created_at.strftime('%H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center my-4">No sales yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Orders - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-bag-check"></i> Medicine Orders</h4>
+        <p class="text-muted mb-0">Manage patient medicine orders and deliveries</p>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-three-dots-vertical"></i> Actions
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('admin.export_orders') }}"><i class="bi bi-download"></i> Export CSV</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card warning">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Pending Orders</h6>
+                    <h2 class="mb-0 text-warning">{{ pending_orders }}</h2>
+                </div>
+                <i class="bi bi-hourglass-split stat-icon text-warning"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card danger">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Unpaid (Delivered)</h6>
+                    <h2 class="mb-0 text-danger">{{ unpaid_orders }}</h2>
+                </div>
+                <i class="bi bi-exclamation-circle stat-icon text-danger"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card success">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Total Revenue</h6>
+                    <h2 class="mb-0 text-success">UGX {{ "{:,.0f}".format(total_revenue) }}</h2>
+                </div>
+                <i class="bi bi-cash-stack stat-icon text-success"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="pending" {{ 'selected' if status == 'pending' }}>Pending</option>
+                    <option value="confirmed" {{ 'selected' if status == 'confirmed' }}>Confirmed</option>
+                    <option value="processing" {{ 'selected' if status == 'processing' }}>Processing</option>
+                    <option value="out_for_delivery" {{ 'selected' if status == 'out_for_delivery' }}>Out for Delivery</option>
+                    <option value="delivered" {{ 'selected' if status == 'delivered' }}>Delivered</option>
+                    <option value="cancelled" {{ 'selected' if status == 'cancelled' }}>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="payment" class="form-select">
+                    <option value="">All Payment</option>
+                    <option value="pending" {{ 'selected' if payment == 'pending' }}>Payment Pending</option>
+                    <option value="paid" {{ 'selected' if payment == 'paid' }}>Paid</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="severity" class="form-select">
+                    <option value="">All Severity</option>
+                    <option value="critical" {{ 'selected' if severity == 'critical' }}>Critical</option>
+                    <option value="severe" {{ 'selected' if severity == 'severe' }}>Severe</option>
+                    <option value="normal" {{ 'selected' if severity == 'normal' }}>Normal</option>
+                    <option value="mild" {{ 'selected' if severity == 'mild' }}>Mild</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Patient</th>
+                        <th>Medicine</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders.items %}
+                    <tr class="{{ 'table-danger' if order.condition_severity == 'critical' else 'table-warning' if order.condition_severity == 'severe' else '' }}">
+                        <td><strong>{{ order.id }}</strong></td>
+                        <td>
+                            <strong>{{ order.patient.full_name }}</strong><br>
+                            <small class="text-muted">{{ order.delivery_phone }}</small>
+                        </td>
+                        <td>{{ order.drug.name[:20] }}{% if order.drug.name|length > 20 %}...{% endif %}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td class="fw-bold">UGX {{ "{:,.0f}".format(order.total_amount) }}</td>
+                        <td>
+                            {% if order.condition_severity == 'critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                            {% elif order.condition_severity == 'severe' %}
+                                <span class="badge bg-warning text-dark">Severe</span>
+                            {% elif order.condition_severity == 'normal' %}
+                                <span class="badge bg-info">Normal</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Mild</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if order.order_status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif order.order_status == 'confirmed' %}
+                                <span class="badge bg-info">Confirmed</span>
+                            {% elif order.order_status == 'processing' %}
+                                <span class="badge bg-primary">Processing</span>
+                            {% elif order.order_status == 'out_for_delivery' %}
+                                <span class="badge bg-info">Out for Delivery</span>
+                            {% elif order.order_status == 'delivered' %}
+                                <span class="badge bg-success">Delivered</span>
+                            {% elif order.order_status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if order.payment_status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.created_at.strftime('%b %d, %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.view_order', id=order.id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Manage
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if orders.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if orders.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.orders', page=orders.prev_num, status=status, payment=payment, severity=severity) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in orders.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == orders.page else '' }}">
+                            <a class="page-link" href="{{ url_for('admin.orders', page=page_num, status=status, payment=payment, severity=severity) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if orders.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.orders', page=orders.next_num, status=status, payment=payment, severity=severity) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

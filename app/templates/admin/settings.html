@@ -1,0 +1,137 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Shop Settings - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h4><i class="bi bi-gear"></i> Shop Settings</h4>
+    <p class="text-muted mb-0">Manage your drug shop information</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-shop"></i> Shop Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Shop Name *</label>
+                            {{ form.shop_name(class="form-control") }}
+                            {% for error in form.shop_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tagline</label>
+                            {{ form.shop_tagline(class="form-control", placeholder="Quality Healthcare, Quality Life") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            {{ form.shop_email(class="form-control") }}
+                            {% for error in form.shop_email.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            {{ form.shop_phone(class="form-control", placeholder="+256 7xxxxxxxx") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        {{ form.shop_address(class="form-control", rows="2") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Business Hours</label>
+                        {{ form.shop_hours(class="form-control", placeholder="Monday - Sunday, 8:00 AM - 10:00 PM") }}
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-currency-exchange"></i> Pricing Settings</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Currency</label>
+                            {{ form.currency(class="form-control", placeholder="UGX") }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Delivery Fee (UGX)</label>
+                            {{ form.delivery_fee(class="form-control") }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Minimum Order Amount (UGX)</label>
+                            {{ form.min_order_amount(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-file-text"></i> About Page Content</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">About Us</label>
+                        {{ form.about_text(class="form-control", rows="3", placeholder="Tell customers about your pharmacy...") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mission Statement</label>
+                        {{ form.mission_text(class="form-control", rows="2") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Vision Statement</label>
+                        {{ form.vision_text(class="form-control", rows="2") }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5><i class="bi bi-info-circle text-primary"></i> Current Settings</h5>
+                <hr>
+                <p><strong>Shop:</strong> {{ settings.shop_name }}</p>
+                <p><strong>Currency:</strong> {{ settings.currency }}</p>
+                <p><strong>Delivery Fee:</strong> {{ settings.currency }} {{ "{:,.0f}".format(settings.delivery_fee or 0) }}</p>
+                <p><strong>Phone:</strong> {{ settings.shop_phone or 'Not set' }}</p>
+                {% if settings.updated_at %}
+                <hr>
+                <small class="text-muted">Last updated: {{ settings.updated_at.strftime('%b %d, %Y %H:%M') }}</small>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="bi bi-link-45deg text-primary"></i> Quick Links</h5>
+                <hr>
+                <a href="{{ url_for('admin.profile') }}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-person"></i> Edit My Profile
+                </a>
+                <a href="{{ url_for('admin.staff') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-people"></i> Manage Staff
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

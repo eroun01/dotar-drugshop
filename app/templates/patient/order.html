@@ -1,0 +1,205 @@
+{% extends "patient/base_patient.html" %}
+
+{% block title %}Order Medicine - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block patient_content %}
+<div class="page-header">
+    <h4><i class="bi bi-cart-plus"></i> Order Medicine</h4>
+    <p class="text-muted mb-0">Order medicine for home delivery - Pay on delivery</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-capsule"></i> Medicine & Health Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="orderForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Select Medicine *</label>
+                            {{ form.drug_id(class="form-select", id="drugSelect") }}
+                            {% for error in form.drug_id.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Quantity *</label>
+                            {{ form.quantity(class="form-control", id="quantity", min="1", value="1") }}
+                            {% for error in form.quantity.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Disease/Condition *</label>
+                            {{ form.disease_condition(class="form-control", placeholder="e.g., Headache, Malaria, Flu") }}
+                            {% for error in form.disease_condition.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Condition Severity *</label>
+                            {{ form.condition_severity(class="form-select") }}
+                            <small class="text-muted">Select severity for delivery priority</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Describe Your Symptoms</label>
+                        {{ form.symptoms_description(class="form-control", rows="3", placeholder="Optional: Describe your symptoms in detail...") }}
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3"><i class="bi bi-geo-alt"></i> Delivery Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">District</label>
+                            {{ form.delivery_district(class="form-select") }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Division/Subcounty</label>
+                            {{ form.delivery_sector(class="form-control", placeholder="e.g., Nakawa Division") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Parish/Village</label>
+                            {{ form.delivery_cell(class="form-control", placeholder="e.g., Ntinda") }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nearby Landmark</label>
+                            {{ form.location_landmark(class="form-control", placeholder="e.g., Near Kibagabaga Hospital") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Full Delivery Address *</label>
+                        {{ form.delivery_address(class="form-control", placeholder="Complete address with house/building details") }}
+                        {% for error in form.delivery_address.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Delivery Phone Number *</label>
+                            {{ form.delivery_phone(class="form-control", placeholder="+256 7xxxxxxxx") }}
+                            {% for error in form.delivery_phone.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Instructions</label>
+                        {{ form.delivery_notes(class="form-control", rows="2", placeholder="Any special delivery instructions...") }}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-cart-check"></i> Place Order
+                        </button>
+                        <a href="{{ url_for('patient.browse_drugs') }}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h5><i class="bi bi-receipt"></i> Order Summary</h5>
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Unit Price:</span>
+                    <strong id="unitPrice">UGX 0</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Quantity:</span>
+                    <strong id="displayQty">1</strong>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <span class="h5">Total:</span>
+                    <strong class="h5 text-success" id="totalAmount">UGX 0</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-success mb-3">
+            <div class="card-body">
+                <h6 class="text-success"><i class="bi bi-cash-coin"></i> Payment on Delivery</h6>
+                <p class="small mb-0">Pay cash when you receive your medicine. No advance payment required.</p>
+            </div>
+        </div>
+        
+        <div class="card border-warning mb-3">
+            <div class="card-body">
+                <h6 class="text-warning"><i class="bi bi-truck"></i> Delivery Priority</h6>
+                <ul class="small mb-0 ps-3">
+                    <li><strong>Mild:</strong> 24-48 hours</li>
+                    <li><strong>Normal:</strong> 12-24 hours</li>
+                    <li><strong>Severe:</strong> 4-8 hours</li>
+                    <li><strong>Critical:</strong> 1-2 hours</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card border-danger">
+            <div class="card-body">
+                <h6 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Emergency?</h6>
+                <p class="small mb-0">If you're experiencing a medical emergency, please call emergency services or visit the nearest hospital immediately.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const drugSelect = document.getElementById('drugSelect');
+    const quantityInput = document.getElementById('quantity');
+    const unitPriceEl = document.getElementById('unitPrice');
+    const displayQtyEl = document.getElementById('displayQty');
+    const totalAmountEl = document.getElementById('totalAmount');
+    
+    function updateTotal() {
+        const selectedOption = drugSelect.options[drugSelect.selectedIndex];
+        const text = selectedOption.text;
+        const priceMatch = text.match(/UGX ([\d,]+)/);
+        
+        let unitPrice = 0;
+        if (priceMatch) {
+            unitPrice = parseFloat(priceMatch[1].replace(/,/g, ''));
+        }
+        
+        const quantity = parseInt(quantityInput.value) || 1;
+        const total = unitPrice * quantity;
+        
+        unitPriceEl.textContent = 'UGX ' + unitPrice.toLocaleString();
+        displayQtyEl.textContent = quantity;
+        totalAmountEl.textContent = 'UGX ' + total.toLocaleString();
+    }
+    
+    drugSelect.addEventListener('change', updateTotal);
+    quantityInput.addEventListener('input', updateTotal);
+    updateTotal();
+});
+</script>
+{% endblock %}

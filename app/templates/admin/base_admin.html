@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 sidebar py-4">
+            <div class="text-center mb-4">
+                <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                <h6 class="mt-2">{{ current_user.full_name }}</h6>
+                <span class="badge bg-primary">{{ current_user.role|title }}</span>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link {{ 'active' if 'drug' in request.endpoint }}" href="{{ url_for('admin.drugs') }}">
+                    <i class="bi bi-capsule"></i> Drugs
+                </a>
+                <a class="nav-link {{ 'active' if 'consultation' in request.endpoint }}" href="{{ url_for('admin.consultations') }}">
+                    <i class="bi bi-chat-dots"></i> Consultations
+                    {% set pending = namespace(count=0) %}
+                    {% set pending.count = pending_consultations_count|default(0) %}
+                </a>
+                <a class="nav-link {{ 'active' if 'sale' in request.endpoint }}" href="{{ url_for('admin.sales') }}">
+                    <i class="bi bi-cash-stack"></i> Sales
+                </a>
+                <a class="nav-link {{ 'active' if 'order' in request.endpoint }}" href="{{ url_for('admin.orders') }}">
+                    <i class="bi bi-bag-check"></i> Orders
+                </a>
+                <a class="nav-link {{ 'active' if 'patient' in request.endpoint }}" href="{{ url_for('admin.patients') }}">
+                    <i class="bi bi-people"></i> Patients
+                </a>
+                {% if current_user.is_admin() %}
+                <a class="nav-link {{ 'active' if 'staff' in request.endpoint }}" href="{{ url_for('admin.staff') }}">
+                    <i class="bi bi-person-badge"></i> Staff
+                </a>
+                {% endif %}
+                <a class="nav-link {{ 'active' if 'report' in request.endpoint }}" href="{{ url_for('admin.reports') }}">
+                    <i class="bi bi-graph-up"></i> Reports
+                </a>
+                <hr>
+                <a class="nav-link {{ 'active' if 'notification' in request.endpoint }}" href="{{ url_for('admin.notifications') }}">
+                    <i class="bi bi-bell"></i> Notifications
+                </a>
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.profile' }}" href="{{ url_for('admin.profile') }}">
+                    <i class="bi bi-person"></i> My Profile
+                </a>
+                {% if current_user.is_admin() %}
+                <a class="nav-link {{ 'active' if 'advertisement' in request.endpoint }}" href="{{ url_for('admin.advertisements') }}">
+                    <i class="bi bi-megaphone"></i> Advertisements
+                </a>
+                <a class="nav-link {{ 'active' if request.endpoint == 'admin.settings' }}" href="{{ url_for('admin.settings') }}">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+                {% endif %}
+                <hr>
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10 py-4">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

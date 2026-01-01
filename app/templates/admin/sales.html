@@ -1,0 +1,120 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Sales - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-cash-stack"></i> Sales Records</h4>
+        <p class="text-muted mb-0">Track and manage drug sales</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i> Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('admin.export_sales') }}"><i class="bi bi-download"></i> Export CSV</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.print_sales') }}" target="_blank"><i class="bi bi-printer"></i> Print Report</a></li>
+            </ul>
+        </div>
+        <a href="{{ url_for('admin.new_sale') }}" class="btn btn-success">
+            <i class="bi bi-cart-plus"></i> New Sale
+        </a>
+    </div>
+</div>
+
+<!-- Summary Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5>Total Revenue: <span class="text-success">UGX {{ "{:,.0f}".format(total_amount) }}</span></h5>
+            </div>
+            <div class="col-md-6">
+                <form method="GET" class="d-flex gap-2">
+                    <input type="date" name="date" class="form-control" value="{{ date_filter }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter"></i> Filter
+                    </button>
+                    {% if date_filter %}
+                    <a href="{{ url_for('admin.sales') }}" class="btn btn-secondary">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sales Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Drug</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                        <th>Customer</th>
+                        <th>Payment</th>
+                        <th>Sold By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales.items %}
+                    <tr>
+                        <td>{{ sale.id }}</td>
+                        <td>{{ sale.drug.name }}</td>
+                        <td>{{ sale.quantity }}</td>
+                        <td>UGX {{ "{:,.0f}".format(sale.unit_price) }}</td>
+                        <td class="fw-bold text-success">UGX {{ "{:,.0f}".format(sale.total_amount) }}</td>
+                        <td>{{ sale.customer_name or 'Walk-in' }}</td>
+                        <td><span class="badge bg-secondary">{{ sale.payment_method|replace('_', ' ')|title }}</span></td>
+                        <td>{{ sale.seller.full_name }}</td>
+                        <td>{{ sale.created_at.strftime('%b %d, %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">No sales found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if sales.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if sales.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.sales', page=sales.prev_num, date=date_filter) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in sales.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == sales.page else '' }}">
+                            <a class="page-link" href="{{ url_for('admin.sales', page=page_num, date=date_filter) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if sales.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.sales', page=sales.next_num, date=date_filter) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

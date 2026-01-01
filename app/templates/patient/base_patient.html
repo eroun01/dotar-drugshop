@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 sidebar py-4">
+            <div class="text-center mb-4">
+                <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                <h6 class="mt-2">{{ current_user.full_name }}</h6>
+                <span class="badge bg-info">Patient</span>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link {{ 'active' if request.endpoint == 'patient.dashboard' }}" href="{{ url_for('patient.dashboard') }}">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a class="nav-link {{ 'active' if request.endpoint == 'patient.browse_drugs' }}" href="{{ url_for('patient.browse_drugs') }}">
+                    <i class="bi bi-capsule"></i> Browse Drugs
+                </a>
+                <a class="nav-link {{ 'active' if request.endpoint == 'patient.order' }}" href="{{ url_for('patient.order') }}">
+                    <i class="bi bi-cart-plus"></i> Order Medicine
+                </a>
+                <a class="nav-link {{ 'active' if 'order' in request.endpoint and request.endpoint not in ['patient.order'] }}" href="{{ url_for('patient.my_orders') }}">
+                    <i class="bi bi-bag-check"></i> My Orders
+                </a>
+                <a class="nav-link {{ 'active' if request.endpoint == 'patient.consult' }}" href="{{ url_for('patient.consult') }}">
+                    <i class="bi bi-chat-dots"></i> New Consultation
+                </a>
+                <a class="nav-link {{ 'active' if 'consultation' in request.endpoint and request.endpoint != 'patient.consult' }}" href="{{ url_for('patient.my_consultations') }}">
+                    <i class="bi bi-journal-text"></i> My Consultations
+                </a>
+                <a class="nav-link {{ 'active' if request.endpoint == 'patient.profile' }}" href="{{ url_for('patient.profile') }}">
+                    <i class="bi bi-gear"></i> Profile
+                </a>
+                <hr>
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10 py-4">
+            {% block patient_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

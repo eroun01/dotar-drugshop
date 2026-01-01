@@ -1,0 +1,105 @@
+{% extends "patient/base_patient.html" %}
+
+{% block title %}My Dashboard - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block patient_content %}
+<div class="page-header">
+    <h4><i class="bi bi-house"></i> My Dashboard</h4>
+    <p class="text-muted mb-0">Welcome back, {{ current_user.full_name }}!</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card warning">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Pending Consultations</h6>
+                    <h2 class="mb-0 text-warning">{{ pending_count }}</h2>
+                </div>
+                <i class="bi bi-hourglass-split stat-icon text-warning"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card success">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Resolved Consultations</h6>
+                    <h2 class="mb-0 text-success">{{ resolved_count }}</h2>
+                </div>
+                <i class="bi bi-check-circle stat-icon text-success"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Total Consultations</h6>
+                    <h2 class="mb-0">{{ pending_count + resolved_count }}</h2>
+                </div>
+                <i class="bi bi-chat-dots stat-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <a href="{{ url_for('patient.consult') }}" class="btn btn-primary w-100 py-4">
+            <i class="bi bi-chat-dots" style="font-size: 2rem;"></i><br>
+            <span class="mt-2 d-block">New Consultation</span>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{{ url_for('patient.browse_drugs') }}" class="btn btn-outline-primary w-100 py-4">
+            <i class="bi bi-search" style="font-size: 2rem;"></i><br>
+            <span class="mt-2 d-block">Browse Drugs</span>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{{ url_for('patient.my_consultations') }}" class="btn btn-outline-secondary w-100 py-4">
+            <i class="bi bi-journal-text" style="font-size: 2rem;"></i><br>
+            <span class="mt-2 d-block">View All Consultations</span>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Consultations -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Consultations</h5>
+        <a href="{{ url_for('patient.my_consultations') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body">
+        {% if my_consultations %}
+            <div class="list-group list-group-flush">
+                {% for consult in my_consultations %}
+                <a href="{{ url_for('patient.view_consultation', id=consult.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>{{ consult.subject }}</strong>
+                            <p class="mb-1 text-muted small">{{ consult.symptoms[:100] }}{% if consult.symptoms|length > 100 %}...{% endif %}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge badge-{{ consult.status }}">{{ consult.status|replace('_', ' ')|title }}</span>
+                            <br><small class="text-muted">{{ consult.created_at.strftime('%b %d, %Y') }}</small>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-chat-dots text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">You haven't made any consultations yet.</p>
+                <a href="{{ url_for('patient.consult') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Start Your First Consultation
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

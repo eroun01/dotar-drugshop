@@ -1,0 +1,98 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Patients - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4><i class="bi bi-people"></i> Registered Patients</h4>
+        <p class="text-muted mb-0">View all registered patient accounts</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i> Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('admin.export_customers') }}"><i class="bi bi-download"></i> Export CSV</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.import_customers') }}"><i class="bi bi-upload"></i> Import CSV</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.print_customers') }}" target="_blank"><i class="bi bi-printer"></i> Print Report</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients.items %}
+                    <tr>
+                        <td>{{ patient.id }}</td>
+                        <td>
+                            <strong>{{ patient.full_name }}</strong>
+                            <br><small class="text-muted">@{{ patient.username }}</small>
+                        </td>
+                        <td>{{ patient.email }}</td>
+                        <td>{{ patient.phone or '-' }}</td>
+                        <td>
+                            {% if patient.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ patient.created_at.strftime('%b %d, %Y') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No patients registered</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if patients.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if patients.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.patients', page=patients.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in patients.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == patients.page else '' }}">
+                            <a class="page-link" href="{{ url_for('admin.patients', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if patients.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.patients', page=patients.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

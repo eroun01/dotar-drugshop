@@ -1,0 +1,141 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ title }} - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h4><i class="bi bi-megaphone"></i> {{ title }}</h4>
+    <p class="text-muted mb-0">{{ 'Create a new advertisement' if not ad else 'Update advertisement details' }}</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                        {{ form.title(class="form-control", placeholder="e.g., New Health Services Available") }}
+                        {% for error in form.title.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        {{ form.description(class="form-control", rows=3, placeholder="Brief description of the advertisement") }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Media Type <span class="text-danger">*</span></label>
+                            {{ form.media_type(class="form-select") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Display Order</label>
+                            {{ form.display_order(class="form-control", placeholder="0 = first") }}
+                            <small class="text-muted">Lower numbers appear first</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6><i class="bi bi-cloud-upload"></i> Media Source</h6>
+                            <p class="text-muted small mb-3">Upload a file OR provide an external URL</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Upload File</label>
+                                {{ form.media_file(class="form-control") }}
+                                <small class="text-muted">Supported: PNG, JPG, GIF, WEBP, MP4, WEBM, MOV (max 16MB)</small>
+                            </div>
+                            
+                            <div class="text-center my-2">
+                                <span class="text-muted">— OR —</span>
+                            </div>
+                            
+                            <div class="mb-0">
+                                <label class="form-label">External URL</label>
+                                {{ form.media_url(class="form-control", placeholder="https://youtube.com/... or https://example.com/image.jpg") }}
+                                <small class="text-muted">For YouTube videos, use the embed URL</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Link URL (optional)</label>
+                        {{ form.link_url(class="form-control", placeholder="https://example.com - where users go when clicking") }}
+                        <small class="text-muted">Leave empty if no link needed</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date (optional)</label>
+                            {{ form.start_date(class="form-control", type="date") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date (optional)</label>
+                            {{ form.end_date(class="form-control", type="date") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_active(class="form-check-input") }}
+                            <label class="form-check-label">Active (visible on homepage)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> {{ 'Save Advertisement' if not ad else 'Update Advertisement' }}
+                        </button>
+                        <a href="{{ url_for('admin.advertisements') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small text-muted mb-0">
+                    <li class="mb-2">Use high-quality images (recommended: 1200x600px)</li>
+                    <li class="mb-2">Keep videos short (15-30 seconds work best)</li>
+                    <li class="mb-2">For YouTube videos, use the embed URL format</li>
+                    <li class="mb-2">Set display order to control the sequence</li>
+                    <li>Use date ranges for seasonal promotions</li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if ad and ad.media_url %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-eye"></i> Current Media</h6>
+            </div>
+            <div class="card-body text-center">
+                {% if ad.media_type == 'image' %}
+                    <img src="{{ ad.media_url }}" alt="{{ ad.title }}" class="img-fluid rounded">
+                {% else %}
+                    {% if 'youtube' in ad.media_url or 'youtu.be' in ad.media_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ ad.media_url|youtube_embed }}" allowfullscreen></iframe>
+                        </div>
+                    {% else %}
+                        <video src="{{ ad.media_url }}" controls class="img-fluid rounded" style="max-height: 200px;"></video>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

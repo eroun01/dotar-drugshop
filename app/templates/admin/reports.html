@@ -1,0 +1,144 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Reports - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h4><i class="bi bi-graph-up"></i> Reports & Analytics</h4>
+    <p class="text-muted mb-0">View business performance and statistics</p>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Patients</h6>
+                <h2 class="mb-0">{{ total_patients }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Consultations</h6>
+                <h2 class="mb-0">{{ total_consultations }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Resolved Consultations</h6>
+                <h2 class="mb-0 text-success">{{ resolved_consultations }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Resolution Rate</h6>
+                <h2 class="mb-0 text-warning">
+                    {% if total_consultations > 0 %}
+                        {{ "%.1f"|format(resolved_consultations / total_consultations * 100) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Daily Sales Chart -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Sales - Last 7 Days</h5>
+            </div>
+            <div class="card-body">
+                {% if daily_sales %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Sales (UGX)</th>
+                                <th>Visual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set max_sale = daily_sales|map(attribute=1)|max if daily_sales else 1 %}
+                            {% for date, total in daily_sales %}
+                            <tr>
+                                <td>{{ date }}</td>
+                                <td class="fw-bold text-success">{{ "{:,.0f}".format(total) }}</td>
+                                <td style="width: 50%;">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: {{ (total / max_sale * 100)|int }}%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-bar-chart" style="font-size: 3rem;"></i>
+                    <p class="mt-2">No sales data available for the last 7 days</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Selling Drugs -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Top Selling Drugs</h5>
+            </div>
+            <div class="card-body">
+                {% if top_drugs %}
+                <div class="list-group list-group-flush">
+                    {% for name, qty, revenue in top_drugs %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>{{ name }}</strong>
+                            <br><small class="text-muted">{{ qty }} units sold</small>
+                        </div>
+                        <span class="badge bg-success">UGX {{ "{:,.0f}".format(revenue) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-capsule" style="font-size: 2rem;"></i>
+                    <p class="mt-2 mb-0">No sales data yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h5><i class="bi bi-download"></i> Quick Actions</h5>
+        <div class="d-flex gap-2 mt-3">
+            <a href="{{ url_for('admin.sales') }}" class="btn btn-outline-primary">
+                <i class="bi bi-table"></i> View All Sales
+            </a>
+            <a href="{{ url_for('admin.drugs') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-capsule"></i> View Inventory
+            </a>
+            <a href="{{ url_for('admin.consultations') }}" class="btn btn-outline-info">
+                <i class="bi bi-chat-dots"></i> View Consultations
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

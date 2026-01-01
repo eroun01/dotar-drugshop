@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="bi bi-capsule"></i> Welcome to {{ shop_settings.shop_name }}
+        </h1>
+        <p class="lead mb-4">{{ shop_settings.shop_tagline or 'Your trusted partner in healthcare. Quality medicines, professional consultation, and compassionate care.' }}</p>
+        <div class="d-flex justify-content-center gap-3">
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_staff() %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-speedometer2"></i> Go to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('patient.consult') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-chat-dots"></i> Consult Now
+                    </a>
+                    <a href="{{ url_for('patient.browse_drugs') }}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-search"></i> Browse Drugs
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                    <i class="bi bi-person-plus"></i> Get Started
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if advertisements %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">
+            <i class="bi bi-megaphone text-primary"></i> News & Promotions
+        </h2>
+        <p class="text-center text-muted mb-4">Stay updated with our latest health services and special offers</p>
+        
+        <div id="advertisementCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-indicators">
+                {% for ad in advertisements %}
+                <button type="button" data-bs-target="#advertisementCarousel" data-bs-slide-to="{{ loop.index0 }}" 
+                        class="{{ 'active' if loop.first }}" aria-current="{{ 'true' if loop.first }}" 
+                        aria-label="Slide {{ loop.index }}"></button>
+                {% endfor %}
+            </div>
+            
+            <div class="carousel-inner rounded-4 shadow">
+                {% for ad in advertisements %}
+                <div class="carousel-item {{ 'active' if loop.first }}" style="background: linear-gradient(135deg, #1a5f7a, #159895);">
+                    <div class="row g-0 align-items-center" style="min-height: 400px;">
+                        <div class="col-md-6 p-4 p-md-5 text-white">
+                            <h3 class="fw-bold mb-3">{{ ad.title }}</h3>
+                            {% if ad.description %}
+                            <p class="mb-4">{{ ad.description }}</p>
+                            {% endif %}
+                            {% if ad.link_url %}
+                            <a href="{{ ad.link_url }}" class="btn btn-light btn-lg" target="_blank">
+                                <i class="bi bi-arrow-right-circle"></i> Learn More
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 text-center p-4">
+                            {% if ad.media_type == 'image' %}
+                                {% if ad.link_url %}
+                                <a href="{{ ad.link_url }}" target="_blank">
+                                    <img src="{{ ad.media_url }}" class="img-fluid rounded-3 shadow" alt="{{ ad.title }}" style="max-height: 350px; object-fit: cover;">
+                                </a>
+                                {% else %}
+                                <img src="{{ ad.media_url }}" class="img-fluid rounded-3 shadow" alt="{{ ad.title }}" style="max-height: 350px; object-fit: cover;">
+                                {% endif %}
+                            {% else %}
+                                {% if 'youtube' in ad.media_url or 'youtu.be' in ad.media_url %}
+                                <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow">
+                                    <iframe src="{{ ad.media_url|youtube_embed }}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                                </div>
+                                {% else %}
+                                <video src="{{ ad.media_url }}" autoplay muted loop playsinline class="img-fluid rounded-3 shadow" style="max-height: 350px;"></video>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if advertisements|length > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#advertisementCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#advertisementCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Services</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-prescription2"></i>
+                        <h4>Quality Medicines</h4>
+                        <p class="text-muted">Wide range of authentic, high-quality pharmaceutical products from trusted manufacturers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-chat-heart"></i>
+                        <h4>Expert Consultation</h4>
+                        <p class="text-muted">Connect with our qualified nurses and pharmacists for professional medical advice.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-shield-check"></i>
+                        <h4>Safe & Secure</h4>
+                        <p class="text-muted">Your health information is protected with enterprise-grade security measures.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2>Why Choose {{ shop_settings.shop_name }}?</h2>
+                <ul class="list-unstyled mt-4">
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Licensed and certified pharmacy
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        24/7 online consultation available
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Competitive and transparent pricing
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Fast and reliable service
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Experienced healthcare professionals
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6 text-center">
+                <i class="bi bi-hospital" style="font-size: 12rem; color: var(--primary-color); opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Get Started?</h2>
+        <p class="lead text-muted mb-4">Create an account today and access quality healthcare services.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus"></i> Register Now
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

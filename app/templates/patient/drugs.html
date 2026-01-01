@@ -1,0 +1,148 @@
+{% extends "patient/base_patient.html" %}
+
+{% block title %}Browse Drugs - {{ shop_settings.shop_name }}{% endblock %}
+
+{% block patient_content %}
+<div class="page-header">
+    <h4><i class="bi bi-capsule"></i> Browse Drugs</h4>
+    <p class="text-muted mb-0">View our available medications</p>
+</div>
+
+<!-- Search & Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search drugs by name..." value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {{ 'selected' if category == cat }}>{{ cat|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Drug Cards -->
+<div class="row g-4">
+    {% for drug in drugs.items %}
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">{{ drug.name }}</h5>
+                    {% if drug.requires_prescription %}
+                    <span class="badge bg-danger">Rx</span>
+                    {% endif %}
+                </div>
+                
+                {% if drug.generic_name %}
+                <p class="text-muted small mb-2">{{ drug.generic_name }}</p>
+                {% endif %}
+                
+                <div class="mb-3">
+                    {% if drug.category %}
+                    <span class="badge bg-light text-dark">{{ drug.category|title }}</span>
+                    {% endif %}
+                    {% if drug.dosage_form %}
+                    <span class="badge bg-light text-dark">{{ drug.dosage_form|title }}</span>
+                    {% endif %}
+                    {% if drug.strength %}
+                    <span class="badge bg-info text-white">{{ drug.strength }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if drug.description %}
+                <p class="card-text small text-muted">{{ drug.description[:80] }}{% if drug.description|length > 80 %}...{% endif %}</p>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h5 class="text-primary mb-0">UGX {{ "{:,.0f}".format(drug.unit_price) }}</h5>
+                    {% if drug.quantity_in_stock > 0 %}
+                    <span class="badge bg-success">In Stock</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Out of Stock</span>
+                    {% endif %}
+                </div>
+                
+                {% if drug.quantity_in_stock > 0 %}
+                <a href="{{ url_for('patient.order', drug_id=drug.id) }}" class="btn btn-success btn-sm w-100 mt-3">
+                    <i class="bi bi-cart-plus"></i> Order Now
+                </a>
+                {% endif %}
+                
+                {% if drug.manufacturer %}
+                <small class="text-muted d-block mt-2">By {{ drug.manufacturer }}</small>
+                {% endif %}
+            </div>
+            
+            {% if drug.requires_prescription %}
+            <div class="card-footer bg-warning-subtle">
+                <small class="text-warning-emphasis">
+                    <i class="bi bi-exclamation-triangle"></i> Requires prescription
+                </small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-capsule text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">No drugs found matching your search.</p>
+                <a href="{{ url_for('patient.browse_drugs') }}" class="btn btn-outline-primary">
+                    Clear Filters
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if drugs.pages > 1 %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if drugs.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('patient.browse_drugs', page=drugs.prev_num, search=search, category=category) }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in drugs.iter_pages() %}
+            {% if page_num %}
+                <li class="page-item {{ 'active' if page_num == drugs.page else '' }}">
+                    <a class="page-link" href="{{ url_for('patient.browse_drugs', page=page_num, search=search, category=category) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if drugs.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('patient.browse_drugs', page=drugs.next_num, search=search, category=category) }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- Info Card -->
+<div class="card mt-4 border-info">
+    <div class="card-body">
+        <h6><i class="bi bi-info-circle text-info"></i> Need Help?</h6>
+        <p class="mb-0">If you need advice on which medication is right for you, <a href="{{ url_for('patient.consult') }}">submit a consultation</a> and our healthcare professionals will assist you.</p>
+    </div>
+</div>
+{% endblock %}
