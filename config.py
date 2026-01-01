@@ -12,6 +12,14 @@ class Config:
     SQLALCHEMY_DATABASE_URI = database_url or 'sqlite:///dotar_drugshop.db'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Database connection pool settings to prevent SSL timeout errors
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,  # Check connection before using
+        'pool_recycle': 300,    # Recycle connections after 5 minutes
+        'pool_size': 5,
+        'max_overflow': 10,
+    }
     WTF_CSRF_ENABLED = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file upload
