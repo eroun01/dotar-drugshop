@@ -51,6 +51,15 @@ def create_app():
             except Exception:
                 db.session.rollback()
         
+        # Add shop_logo column to shop_settings if it doesn't exist
+        shop_columns = [col['name'] for col in inspector.get_columns('shop_settings')]
+        if 'shop_logo' not in shop_columns:
+            try:
+                db.session.execute(text('ALTER TABLE shop_settings ADD COLUMN shop_logo VARCHAR(500)'))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        
         from app.models import User, ShopSettings
         if not User.query.filter_by(username='admin').first():
             admin_user = User(
