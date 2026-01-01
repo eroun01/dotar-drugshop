@@ -117,7 +117,7 @@ class SaleForm(FlaskForm):
 
 
 class OrderForm(FlaskForm):
-    drug_id = SelectField('Select Medicine', coerce=int, validators=[DataRequired()])
+    drug_id = SelectField('Select Medicine', coerce=int, validators=[DataRequired(), NumberRange(min=1, message='Please select a medicine')])
     quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1)])
     
     disease_condition = StringField('Disease/Condition', validators=[DataRequired(), Length(max=200)])

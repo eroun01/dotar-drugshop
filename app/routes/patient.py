@@ -145,6 +145,10 @@ def order(drug_id=None):
         form.drug_id.data = drug_id
     
     if form.validate_on_submit():
+        if form.drug_id.data == 0:
+            flash('Please select a medicine.', 'error')
+            return redirect(url_for('patient.order'))
+        
         drug = Drug.query.get(form.drug_id.data)
         if not drug:
             flash('Invalid medicine selected.', 'error')
