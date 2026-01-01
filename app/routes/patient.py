@@ -125,7 +125,10 @@ def profile():
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('patient.profile'))
     
-    return render_template('patient/profile.html', form=form)
+    order_count = Order.query.filter_by(patient_id=current_user.id).count()
+    consultation_count = Consultation.query.filter_by(patient_id=current_user.id).count()
+    
+    return render_template('patient/profile.html', form=form, order_count=order_count, consultation_count=consultation_count)
 
 
 @bp.route('/order', methods=['GET', 'POST'])
