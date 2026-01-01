@@ -118,9 +118,9 @@ class ShopSettings(db.Model):
     __tablename__ = 'shop_settings'
     
     id = db.Column(db.Integer, primary_key=True)
-    shop_name = db.Column(db.String(200), default='Dotar Drug Shop')
+    shop_name = db.Column(db.String(200), default='Parl Drug Shop')
     shop_tagline = db.Column(db.String(300), default='Quality Healthcare, Quality Life')
-    shop_email = db.Column(db.String(120), default='info@dotar.com')
+    shop_email = db.Column(db.String(120), default='info@parldrugshop.com')
     shop_phone = db.Column(db.String(50), default='+256 700 000 000')
     shop_address = db.Column(db.Text, default='Kampala, Uganda')
     shop_hours = db.Column(db.String(200), default='Monday - Sunday, 8:00 AM - 10:00 PM')
