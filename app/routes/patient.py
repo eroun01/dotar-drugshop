@@ -85,6 +85,12 @@ def consult():
         flash('Your consultation has been submitted. A nurse will respond soon.', 'success')
         return redirect(url_for('patient.my_consultations'))
     
+    # Show form errors if validation failed
+    if request.method == 'POST' and not form.validate():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{field}: {error}', 'error')
+    
     return render_template('patient/consult.html', form=form)
 
 @bp.route('/consultations')
@@ -224,6 +230,12 @@ def order(drug_id=None):
     
     if current_user.phone:
         form.delivery_phone.data = form.delivery_phone.data or current_user.phone
+    
+    # Show form errors if validation failed
+    if request.method == 'POST' and not form.validate():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{field}: {error}', 'error')
     
     return render_template('patient/order.html', form=form)
 
