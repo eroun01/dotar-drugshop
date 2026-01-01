@@ -31,6 +31,26 @@ def create_app():
     
     with app.app_context():
         db.create_all()
+        
+        # Add new columns if they don't exist (for existing databases)
+        from sqlalchemy import text, inspect
+        inspector = inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('users')]
+        
+        if 'google_id' not in columns:
+            try:
+                db.session.execute(text('ALTER TABLE users ADD COLUMN google_id VARCHAR(100) UNIQUE'))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        
+        if 'profile_pic' not in columns:
+            try:
+                db.session.execute(text('ALTER TABLE users ADD COLUMN profile_pic VARCHAR(500)'))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        
         from app.models import User, ShopSettings
         if not User.query.filter_by(username='admin').first():
             admin_user = User(
