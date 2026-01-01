@@ -15,7 +15,7 @@
                 <h5 class="mb-0"><i class="bi bi-shop"></i> Shop Information</h5>
             </div>
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     
                     <div class="row">
@@ -30,6 +30,38 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Tagline</label>
                             {{ form.shop_tagline(class="form-control", placeholder="Quality Healthcare, Quality Life") }}
+                        </div>
+                    </div>
+                    
+                    <!-- Shop Logo Upload -->
+                    <div class="mb-4 p-3 border rounded bg-light">
+                        <h6 class="mb-3"><i class="bi bi-image"></i> Shop Logo</h6>
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                {% if settings.shop_logo %}
+                                    <img src="{{ settings.shop_logo }}" alt="Shop Logo" class="img-fluid rounded mb-2" style="max-height: 120px; max-width: 200px;">
+                                    <p class="small text-muted mb-1">Current Logo</p>
+                                    <form method="POST" action="{{ url_for('admin.remove_logo') }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove the logo?')">
+                                            <i class="bi bi-trash"></i> Remove
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <div class="border rounded p-4 bg-white">
+                                        <i class="bi bi-shop text-muted" style="font-size: 3rem;"></i>
+                                        <p class="small text-muted mb-0 mt-2">No logo uploaded</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Upload New Logo</label>
+                                {{ form.shop_logo(class="form-control") }}
+                                {% for error in form.shop_logo.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                <small class="text-muted">Accepted formats: PNG, JPG, JPEG, GIF, WEBP. Recommended size: 200x200 pixels or larger.</small>
+                            </div>
                         </div>
                     </div>
                     
@@ -109,6 +141,11 @@
             <div class="card-body">
                 <h5><i class="bi bi-info-circle text-primary"></i> Current Settings</h5>
                 <hr>
+                {% if settings.shop_logo %}
+                <div class="text-center mb-3">
+                    <img src="{{ settings.shop_logo }}" alt="Shop Logo" class="img-fluid rounded" style="max-height: 80px;">
+                </div>
+                {% endif %}
                 <p><strong>Shop:</strong> {{ settings.shop_name }}</p>
                 <p><strong>Currency:</strong> {{ settings.currency }}</p>
                 <p><strong>Delivery Fee:</strong> {{ settings.currency }} {{ "{:,.0f}".format(settings.delivery_fee or 0) }}</p>
@@ -130,6 +167,18 @@
                 <a href="{{ url_for('admin.staff') }}" class="btn btn-outline-secondary w-100">
                     <i class="bi bi-people"></i> Manage Staff
                 </a>
+            </div>
+        </div>
+        
+        <div class="card mt-3 border-info">
+            <div class="card-body">
+                <h6><i class="bi bi-lightbulb text-info"></i> Logo Tips</h6>
+                <ul class="small text-muted mb-0">
+                    <li>Use a square or horizontal logo</li>
+                    <li>PNG with transparent background works best</li>
+                    <li>Keep file size under 2MB</li>
+                    <li>Use high resolution for best quality</li>
+                </ul>
             </div>
         </div>
     </div>

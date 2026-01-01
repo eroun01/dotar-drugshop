@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from functools import wraps
 from app import db
 from app.models import Drug, Consultation, Order, Notification, Sale
-from app.forms import ConsultationForm, OrderForm
+from app.forms import ConsultationForm, OrderForm, PatientProfileForm
 from app.uganda_locations import get_subcounties, get_villages, UGANDA_LOCATIONS
 
 bp = Blueprint('patient', __name__, url_prefix='/patient')
@@ -106,14 +106,26 @@ def view_consultation(id):
 @login_required
 @patient_required
 def profile():
-    if request.method == 'POST':
-        current_user.full_name = request.form.get('full_name', current_user.full_name)
-        current_user.phone = request.form.get('phone', current_user.phone)
+    form = PatientProfileForm(obj=current_user)
+    
+    if form.validate_on_submit():
+        if form.current_password.data:
+            if not current_user.check_password(form.current_password.data):
+                flash('Current password is incorrect.', 'error')
+                return redirect(url_for('patient.profile'))
+            
+            if form.new_password.data:
+                current_user.set_password(form.new_password.data)
+                flash('Password changed successfully!', 'success')
+        
+        current_user.full_name = form.full_name.data
+        current_user.email = form.email.data
+        current_user.phone = form.phone.data
         db.session.commit()
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('patient.profile'))
     
-    return render_template('patient/profile.html')
+    return render_template('patient/profile.html', form=form)
 
 
 @bp.route('/order', methods=['GET', 'POST'])

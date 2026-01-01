@@ -162,8 +162,13 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="bi bi-capsule"></i> {{ shop_settings.shop_name }}
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                {% if shop_settings.shop_logo %}
+                    <img src="{{ shop_settings.shop_logo }}" alt="{{ shop_settings.shop_name }}" style="height: 35px; margin-right: 10px;">
+                {% else %}
+                    <i class="bi bi-capsule me-2"></i>
+                {% endif %}
+                {{ shop_settings.shop_name }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

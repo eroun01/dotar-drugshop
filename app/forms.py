@@ -162,6 +162,7 @@ class OrderStatusForm(FlaskForm):
 class ShopSettingsForm(FlaskForm):
     shop_name = StringField('Shop Name', validators=[DataRequired(), Length(max=200)])
     shop_tagline = StringField('Tagline', validators=[Optional(), Length(max=300)])
+    shop_logo = FileField('Shop Logo', validators=[Optional(), FileAllowed(['png', 'jpg', 'jpeg', 'gif', 'webp'], 'Images only!')])
     shop_email = StringField('Email', validators=[Optional(), Email()])
     shop_phone = StringField('Phone', validators=[Optional(), Length(max=50)])
     shop_address = TextAreaField('Address', validators=[Optional()])
@@ -181,6 +182,15 @@ class AdminProfileForm(FlaskForm):
     current_password = PasswordField('Current Password', validators=[Optional()])
     new_password = PasswordField('New Password', validators=[Optional(), Length(min=6)])
     confirm_new_password = PasswordField('Confirm New Password', validators=[Optional(), EqualTo('new_password')])
+
+
+class PatientProfileForm(FlaskForm):
+    full_name = StringField('Full Name', validators=[DataRequired(), Length(min=2, max=150)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
+    current_password = PasswordField('Current Password', validators=[Optional()])
+    new_password = PasswordField('New Password', validators=[Optional(), Length(min=6)])
+    confirm_new_password = PasswordField('Confirm New Password', validators=[Optional(), EqualTo('new_password', message='Passwords must match')])
 
 
 class AdvertisementForm(FlaskForm):

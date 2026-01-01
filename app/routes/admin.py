@@ -467,6 +467,20 @@ def settings():
     form = ShopSettingsForm(obj=settings)
     
     if form.validate_on_submit():
+        if form.shop_logo.data:
+            file = form.shop_logo.data
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+                filename = 'logo_' + timestamp + filename
+                
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'logo')
+                os.makedirs(upload_folder, exist_ok=True)
+                
+                file_path = os.path.join(upload_folder, filename)
+                file.save(file_path)
+                settings.shop_logo = f'/static/uploads/logo/{filename}'
+        
         settings.shop_name = form.shop_name.data
         settings.shop_tagline = form.shop_tagline.data
         settings.shop_email = form.shop_email.data
@@ -485,6 +499,19 @@ def settings():
         return redirect(url_for('admin.settings'))
     
     return render_template('admin/settings.html', form=form, settings=settings)
+
+
+@bp.route('/settings/remove-logo', methods=['POST'])
+@login_required
+@admin_required
+def remove_logo():
+    settings = ShopSettings.query.first()
+    if settings and settings.shop_logo:
+        settings.shop_logo = None
+        settings.updated_by = current_user.id
+        db.session.commit()
+        flash('Shop logo removed successfully!', 'success')
+    return redirect(url_for('admin.settings'))
 
 
 @bp.route('/profile', methods=['GET', 'POST'])
