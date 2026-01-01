@@ -68,14 +68,18 @@
                         
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Division/Subcounty</label>
-                            {{ form.delivery_sector(class="form-select", id="subcountySelect") }}
+                            <select class="form-select" id="subcountySelect" name="delivery_sector">
+                                <option value="">Select Subcounty</option>
+                            </select>
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Parish/Village</label>
-                            {{ form.delivery_cell(class="form-select", id="villageSelect") }}
+                            <select class="form-select" id="villageSelect" name="delivery_cell">
+                                <option value="">Select Village</option>
+                            </select>
                         </div>
                         
                         <div class="col-md-6 mb-3">

@@ -131,8 +131,8 @@ class OrderForm(FlaskForm):
     
     delivery_address = StringField('Full Delivery Address', validators=[DataRequired(), Length(max=300)])
     delivery_district = SelectField('District', choices=[])
-    delivery_sector = SelectField('Division/Subcounty', choices=[('', 'Select Subcounty')], validators=[Optional()])
-    delivery_cell = SelectField('Parish/Village', choices=[('', 'Select Village')], validators=[Optional()])
+    delivery_sector = StringField('Division/Subcounty', validators=[Optional(), Length(max=100)])
+    delivery_cell = StringField('Parish/Village', validators=[Optional(), Length(max=100)])
     location_landmark = StringField('Nearby Landmark', validators=[Optional(), Length(max=200)])
     delivery_phone = StringField('Delivery Phone Number', validators=[DataRequired(), Length(max=20)])
     delivery_notes = TextAreaField('Delivery Instructions', validators=[Optional()])
