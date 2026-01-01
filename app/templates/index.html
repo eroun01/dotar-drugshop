@@ -185,4 +185,67 @@
         {% endif %}
     </div>
 </section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="mb-3">
+                            <i class="bi bi-qr-code text-primary"></i> Scan to Visit Us
+                        </h4>
+                        <p class="text-muted mb-4">Scan this QR code with your phone camera to access our services</p>
+                        
+                        <div class="mb-4">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ request.url_root }}" 
+                                 alt="QR Code" 
+                                 class="img-fluid rounded shadow-sm"
+                                 style="max-width: 200px;">
+                        </div>
+                        
+                        <div class="input-group mb-3" style="max-width: 400px; margin: 0 auto;">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="siteUrl" 
+                                   value="{{ request.url_root }}" 
+                                   readonly>
+                            <button class="btn btn-primary" type="button" onclick="copyUrl()" id="copyBtn">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                        
+                        <small class="text-muted">
+                            <i class="bi bi-share"></i> Share this link with friends and family
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyUrl() {
+    const urlInput = document.getElementById('siteUrl');
+    const copyBtn = document.getElementById('copyBtn');
+    
+    urlInput.select();
+    urlInput.setSelectionRange(0, 99999);
+    
+    navigator.clipboard.writeText(urlInput.value).then(function() {
+        copyBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        copyBtn.classList.remove('btn-primary');
+        copyBtn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            copyBtn.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+            copyBtn.classList.remove('btn-success');
+            copyBtn.classList.add('btn-primary');
+        }, 2000);
+    });
+}
+</script>
 {% endblock %}
