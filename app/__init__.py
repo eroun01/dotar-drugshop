@@ -74,7 +74,11 @@ def create_app():
         from app.models import Notification, ShopSettings
         from datetime import datetime
         
-        result = {'unread_notifications': 0, 'now': datetime.now}
+        result = {
+            'unread_notifications': 0, 
+            'now': datetime.now,
+            'google_oauth_enabled': bool(app.config.get('GOOGLE_CLIENT_ID'))
+        }
         
         if current_user.is_authenticated and hasattr(current_user, 'is_staff') and current_user.is_staff():
             unread_count = Notification.query.filter(
