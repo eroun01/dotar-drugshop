@@ -63,19 +63,19 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">District</label>
-                            {{ form.delivery_district(class="form-select") }}
+                            {{ form.delivery_district(class="form-select", id="districtSelect") }}
                         </div>
                         
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Division/Subcounty</label>
-                            {{ form.delivery_sector(class="form-control", placeholder="e.g., Nakawa Division") }}
+                            {{ form.delivery_sector(class="form-select", id="subcountySelect") }}
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Parish/Village</label>
-                            {{ form.delivery_cell(class="form-control", placeholder="e.g., Ntinda") }}
+                            {{ form.delivery_cell(class="form-select", id="villageSelect") }}
                         </div>
                         
                         <div class="col-md-6 mb-3">
@@ -179,6 +179,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const displayQtyEl = document.getElementById('displayQty');
     const totalAmountEl = document.getElementById('totalAmount');
     
+    const districtSelect = document.getElementById('districtSelect');
+    const subcountySelect = document.getElementById('subcountySelect');
+    const villageSelect = document.getElementById('villageSelect');
+    
     function updateTotal() {
         const selectedOption = drugSelect.options[drugSelect.selectedIndex];
         const text = selectedOption.text;
@@ -196,6 +200,59 @@ document.addEventListener('DOMContentLoaded', function() {
         displayQtyEl.textContent = quantity;
         totalAmountEl.textContent = 'UGX ' + total.toLocaleString();
     }
+    
+    function fetchSubcounties(district) {
+        if (!district) {
+            subcountySelect.innerHTML = '<option value="">Select Subcounty</option>';
+            villageSelect.innerHTML = '<option value="">Select Village</option>';
+            return;
+        }
+        
+        fetch(`/patient/api/subcounties/${district}`)
+            .then(response => response.json())
+            .then(data => {
+                subcountySelect.innerHTML = '<option value="">Select Subcounty</option>';
+                data.subcounties.forEach(subcounty => {
+                    const option = document.createElement('option');
+                    option.value = subcounty;
+                    option.textContent = subcounty;
+                    subcountySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching subcounties:', error);
+                subcountySelect.innerHTML = '<option value="">Select Subcounty</option>';
+            });
+    }
+    
+    function fetchVillages(district) {
+        if (!district) {
+            villageSelect.innerHTML = '<option value="">Select Village</option>';
+            return;
+        }
+        
+        fetch(`/patient/api/villages/${district}`)
+            .then(response => response.json())
+            .then(data => {
+                villageSelect.innerHTML = '<option value="">Select Village</option>';
+                data.villages.forEach(village => {
+                    const option = document.createElement('option');
+                    option.value = village;
+                    option.textContent = village;
+                    villageSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching villages:', error);
+                villageSelect.innerHTML = '<option value="">Select Village</option>';
+            });
+    }
+    
+    districtSelect.addEventListener('change', function() {
+        const selectedDistrict = this.value;
+        fetchSubcounties(selectedDistrict);
+        fetchVillages(selectedDistrict);
+    });
     
     drugSelect.addEventListener('change', updateTotal);
     quantityInput.addEventListener('input', updateTotal);

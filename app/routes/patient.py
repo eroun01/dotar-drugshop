@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
 from app import db
 from app.models import Drug, Consultation, Order, Notification, Sale
 from app.forms import ConsultationForm, OrderForm
+from app.uganda_locations import get_subcounties, get_villages, UGANDA_LOCATIONS
 
 bp = Blueprint('patient', __name__, url_prefix='/patient')
 
@@ -222,3 +223,33 @@ def my_orders():
 def view_order(id):
     order = Order.query.filter_by(id=id, patient_id=current_user.id).first_or_404()
     return render_template('patient/order_detail.html', order=order)
+
+
+@bp.route('/api/subcounties/<district>')
+@login_required
+def get_district_subcounties(district):
+    """API endpoint to fetch subcounties for a selected district"""
+    district_name = district.replace('_', ' ').replace('-', ' ').title()
+    
+    for key in UGANDA_LOCATIONS.keys():
+        if key.lower().replace(' ', '_').replace('-', '_') == district.lower():
+            district_name = key
+            break
+    
+    subcounties = get_subcounties(district_name)
+    return jsonify({'subcounties': subcounties})
+
+
+@bp.route('/api/villages/<district>')
+@login_required
+def get_district_villages(district):
+    """API endpoint to fetch villages/parishes for a selected district"""
+    district_name = district.replace('_', ' ').replace('-', ' ').title()
+    
+    for key in UGANDA_LOCATIONS.keys():
+        if key.lower().replace(' ', '_').replace('-', '_') == district.lower():
+            district_name = key
+            break
+    
+    villages = get_villages(district_name)
+    return jsonify({'villages': villages})
