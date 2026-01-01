@@ -10,16 +10,26 @@ import requests
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
+def is_email_configured():
+    """Check if email is properly configured"""
+    return bool(current_app.config.get('MAIL_USERNAME') and current_app.config.get('MAIL_PASSWORD'))
+
+
 def send_reset_email(user):
     """Send password reset email to user"""
+    if not is_email_configured():
+        current_app.logger.warning('Email not configured - MAIL_USERNAME or MAIL_PASSWORD missing')
+        return False, 'email_not_configured'
+    
     token = user.get_reset_token()
     reset_url = url_for('auth.reset_password', token=token, _external=True)
     
-    msg = Message(
-        'Password Reset Request - Dotar Drug Shop',
-        recipients=[user.email]
-    )
-    msg.body = f'''Hello {user.full_name},
+    try:
+        msg = Message(
+            'Password Reset Request - Dotar Drug Shop',
+            recipients=[user.email]
+        )
+        msg.body = f'''Hello {user.full_name},
 
 You requested a password reset for your Dotar Drug Shop account.
 
@@ -33,35 +43,34 @@ If you did not request this, please ignore this email.
 Best regards,
 Dotar Drug Shop Team
 '''
-    msg.html = f'''
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: #0d6efd; color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0;">Dotar Drug Shop</h1>
+        msg.html = f'''
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #0d6efd; color: white; padding: 20px; text-align: center;">
+                <h1 style="margin: 0;">Dotar Drug Shop</h1>
+            </div>
+            <div style="padding: 30px; background: #f8f9fa;">
+                <h2>Password Reset Request</h2>
+                <p>Hello <strong>{user.full_name}</strong>,</p>
+                <p>You requested a password reset for your account.</p>
+                <p style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" style="background: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </p>
+                <p style="color: #666; font-size: 14px;">This link will expire in 30 minutes.</p>
+                <p style="color: #666; font-size: 14px;">If you did not request this, please ignore this email.</p>
+            </div>
+            <div style="background: #e9ecef; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+                &copy; Dotar Drug Shop - Quality Healthcare, Quality Life
+            </div>
         </div>
-        <div style="padding: 30px; background: #f8f9fa;">
-            <h2>Password Reset Request</h2>
-            <p>Hello <strong>{user.full_name}</strong>,</p>
-            <p>You requested a password reset for your account.</p>
-            <p style="text-align: center; margin: 30px 0;">
-                <a href="{reset_url}" style="background: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                    Reset Password
-                </a>
-            </p>
-            <p style="color: #666; font-size: 14px;">This link will expire in 30 minutes.</p>
-            <p style="color: #666; font-size: 14px;">If you did not request this, please ignore this email.</p>
-        </div>
-        <div style="background: #e9ecef; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-            &copy; Dotar Drug Shop - Quality Healthcare, Quality Life
-        </div>
-    </div>
-    '''
-    
-    try:
+        '''
+        
         mail.send(msg)
-        return True
+        return True, 'sent'
     except Exception as e:
         current_app.logger.error(f'Failed to send email: {e}')
-        return False
+        return False, str(e)
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -132,19 +141,30 @@ def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
+    # Check if email is configured
+    email_configured = is_email_configured()
+    
     form = ForgotPasswordForm()
     if form.validate_on_submit():
+        if not email_configured:
+            flash('Password reset via email is not available. Please contact the administrator.', 'warning')
+            return redirect(url_for('auth.login'))
+        
         user = User.query.filter_by(email=form.email.data).first()
         if user:
-            if send_reset_email(user):
+            success, message = send_reset_email(user)
+            if success:
                 flash('A password reset link has been sent to your email.', 'success')
+            elif message == 'email_not_configured':
+                flash('Password reset via email is not available. Please contact the administrator.', 'warning')
             else:
                 flash('Failed to send email. Please try again later.', 'error')
         else:
-            flash('A password reset link has been sent to your email if it exists.', 'success')
+            # Don't reveal if email exists or not for security
+            flash('If an account with that email exists, a password reset link has been sent.', 'info')
         return redirect(url_for('auth.login'))
     
-    return render_template('auth/forgot_password.html', form=form)
+    return render_template('auth/forgot_password.html', form=form, email_configured=email_configured)
 
 
 @bp.route('/reset-password/<token>', methods=['GET', 'POST'])
