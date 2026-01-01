@@ -189,35 +189,62 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6 text-center">
+            <div class="col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
-                        <h4 class="mb-3">
-                            <i class="bi bi-qr-code text-primary"></i> Scan to Visit Us
+                        <h4 class="text-center mb-4">
+                            <i class="bi bi-qr-code text-primary"></i> Scan & Connect With Us
                         </h4>
-                        <p class="text-muted mb-4">Scan this QR code with your phone camera to access our services</p>
                         
-                        <div class="mb-4">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ request.url_root }}" 
-                                 alt="QR Code" 
-                                 class="img-fluid rounded shadow-sm"
-                                 style="max-width: 200px;">
+                        <div class="row align-items-center">
+                            <div class="col-md-5 text-center mb-4 mb-md-0">
+                                {% set vcard_data = "BEGIN:VCARD\nVERSION:3.0\nFN:" ~ shop_settings.shop_name ~ "\nORG:" ~ shop_settings.shop_name ~ "\nTEL:" ~ (shop_settings.shop_phone or '') ~ "\nEMAIL:" ~ (shop_settings.shop_email or '') ~ "\nADR:;;" ~ (shop_settings.shop_address or ''|replace('\n', ' ')) ~ "\nURL:" ~ request.url_root ~ "\nNOTE:" ~ (shop_settings.shop_tagline or '') ~ "\nEND:VCARD" %}
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ vcard_data|urlencode }}" 
+                                     alt="QR Code - {{ shop_settings.shop_name }}" 
+                                     class="img-fluid rounded shadow"
+                                     style="max-width: 180px;">
+                                <p class="text-muted small mt-2 mb-0">Scan to save contact</p>
+                            </div>
+                            
+                            <div class="col-md-7">
+                                <h5 class="text-primary mb-3">{{ shop_settings.shop_name }}</h5>
+                                <p class="text-muted small mb-2">{{ shop_settings.shop_tagline }}</p>
+                                
+                                <ul class="list-unstyled mb-3">
+                                    {% if shop_settings.shop_phone %}
+                                    <li class="mb-2">
+                                        <i class="bi bi-telephone text-primary me-2"></i>
+                                        <a href="tel:{{ shop_settings.shop_phone }}" class="text-decoration-none">{{ shop_settings.shop_phone }}</a>
+                                    </li>
+                                    {% endif %}
+                                    {% if shop_settings.shop_email %}
+                                    <li class="mb-2">
+                                        <i class="bi bi-envelope text-primary me-2"></i>
+                                        <a href="mailto:{{ shop_settings.shop_email }}" class="text-decoration-none">{{ shop_settings.shop_email }}</a>
+                                    </li>
+                                    {% endif %}
+                                    {% if shop_settings.shop_address %}
+                                    <li class="mb-2">
+                                        <i class="bi bi-geo-alt text-primary me-2"></i>
+                                        {{ shop_settings.shop_address }}
+                                    </li>
+                                    {% endif %}
+                                    {% if shop_settings.shop_hours %}
+                                    <li class="mb-2">
+                                        <i class="bi bi-clock text-primary me-2"></i>
+                                        {{ shop_settings.shop_hours }}
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                                
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="siteUrl" value="{{ request.url_root }}" readonly>
+                                    <button class="btn btn-primary" type="button" onclick="copyUrl()" id="copyBtn">
+                                        <i class="bi bi-clipboard"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="input-group mb-3" style="max-width: 400px; margin: 0 auto;">
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="siteUrl" 
-                                   value="{{ request.url_root }}" 
-                                   readonly>
-                            <button class="btn btn-primary" type="button" onclick="copyUrl()" id="copyBtn">
-                                <i class="bi bi-clipboard"></i> Copy
-                            </button>
-                        </div>
-                        
-                        <small class="text-muted">
-                            <i class="bi bi-share"></i> Share this link with friends and family
-                        </small>
                     </div>
                 </div>
             </div>
