@@ -9,12 +9,16 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=True)
     full_name = db.Column(db.String(150), nullable=False)
     phone = db.Column(db.String(20))
     role = db.Column(db.String(20), nullable=False, default='patient')  # admin, nurse, patient
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # OAuth fields
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    profile_pic = db.Column(db.String(500), nullable=True)
     
     consultations = db.relationship('Consultation', backref='patient', lazy='dynamic', foreign_keys='Consultation.patient_id')
     responses = db.relationship('Consultation', backref='responder', lazy='dynamic', foreign_keys='Consultation.responder_id')
@@ -23,6 +27,8 @@ class User(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
+        if not self.password_hash:
+            return False
         return check_password_hash(self.password_hash, password)
     
     def is_admin(self):
@@ -33,6 +39,23 @@ class User(UserMixin, db.Model):
     
     def is_staff(self):
         return self.role in ['admin', 'nurse']
+    
+    def get_reset_token(self, expires_sec=1800):
+        from itsdangerous import URLSafeTimedSerializer
+        from flask import current_app
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id}, salt='password-reset-salt')
+    
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+        from flask import current_app
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token, salt='password-reset-salt', max_age=expires_sec)
+        except (SignatureExpired, BadSignature):
+            return None
+        return User.query.get(data['user_id'])
 
 @login_manager.user_loader
 def load_user(id):
