@@ -106,6 +106,7 @@ def view_consultation(id):
 @login_required
 @patient_required
 def profile():
+    """User profile page with password change functionality."""
     form = PatientProfileForm(obj=current_user)
     
     if form.validate_on_submit():
