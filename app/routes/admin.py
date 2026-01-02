@@ -467,9 +467,9 @@ def settings():
     form = ShopSettingsForm(obj=settings)
     
     if form.validate_on_submit():
-        if form.shop_logo.data:
+        if form.shop_logo.data and hasattr(form.shop_logo.data, 'filename') and form.shop_logo.data.filename:
             file = form.shop_logo.data
-            if file and allowed_file(file.filename):
+            if allowed_file(file.filename):
                 import base64
                 file_data = file.read()
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
@@ -883,9 +883,9 @@ def add_advertisement():
     if form.validate_on_submit():
         media_url = None
         
-        if form.media_file.data:
+        if form.media_file.data and hasattr(form.media_file.data, 'filename') and form.media_file.data.filename:
             file = form.media_file.data
-            if file and allowed_file(file.filename):
+            if allowed_file(file.filename):
                 import base64
                 file_data = file.read()
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
@@ -938,9 +938,9 @@ def edit_advertisement(id):
     form = AdvertisementForm(obj=ad)
     
     if form.validate_on_submit():
-        if form.media_file.data:
+        if form.media_file.data and hasattr(form.media_file.data, 'filename') and form.media_file.data.filename:
             file = form.media_file.data
-            if file and allowed_file(file.filename):
+            if allowed_file(file.filename):
                 import base64
                 file_data = file.read()
                 file_ext = file.filename.rsplit('.', 1)[1].lower()
