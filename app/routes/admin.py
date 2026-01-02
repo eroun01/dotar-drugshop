@@ -501,12 +501,18 @@ def settings():
 @login_required
 @admin_required
 def remove_logo():
-    settings = ShopSettings.query.first()
-    if settings and settings.shop_logo:
-        settings.shop_logo = None
-        settings.updated_by = current_user.id
-        db.session.commit()
-        flash('Shop logo removed successfully!', 'success')
+    try:
+        settings = ShopSettings.query.first()
+        if settings and settings.shop_logo:
+            settings.shop_logo = None
+            settings.updated_by = current_user.id
+            db.session.commit()
+            flash('Shop logo removed successfully!', 'success')
+        else:
+            flash('No logo to remove.', 'info')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error removing logo: {str(e)}', 'error')
     return redirect(url_for('admin.settings'))
 
 
