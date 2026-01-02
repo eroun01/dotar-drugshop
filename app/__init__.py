@@ -51,14 +51,28 @@ def create_app():
             except Exception:
                 db.session.rollback()
         
-        # Add shop_logo column to shop_settings if it doesn't exist
+        # Add shop_logo column to shop_settings if it doesn't exist (use TEXT for base64)
         shop_columns = [col['name'] for col in inspector.get_columns('shop_settings')]
         if 'shop_logo' not in shop_columns:
             try:
-                db.session.execute(text('ALTER TABLE shop_settings ADD COLUMN shop_logo VARCHAR(500)'))
+                db.session.execute(text('ALTER TABLE shop_settings ADD COLUMN shop_logo TEXT'))
                 db.session.commit()
             except Exception:
                 db.session.rollback()
+        else:
+            # Alter column type to TEXT if it exists but is VARCHAR
+            try:
+                db.session.execute(text('ALTER TABLE shop_settings ALTER COLUMN shop_logo TYPE TEXT'))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        
+        # Alter advertisements media_url to TEXT for base64 storage
+        try:
+            db.session.execute(text('ALTER TABLE advertisements ALTER COLUMN media_url TYPE TEXT'))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         
         from app.models import User, ShopSettings
         if not User.query.filter_by(username='admin').first():

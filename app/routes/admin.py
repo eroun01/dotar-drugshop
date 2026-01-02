@@ -470,16 +470,12 @@ def settings():
         if form.shop_logo.data:
             file = form.shop_logo.data
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
-                filename = 'logo_' + timestamp + filename
-                
-                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'logo')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                file_path = os.path.join(upload_folder, filename)
-                file.save(file_path)
-                settings.shop_logo = f'/static/uploads/logo/{filename}'
+                import base64
+                file_data = file.read()
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                mime_type = f'image/{file_ext}' if file_ext != 'jpg' else 'image/jpeg'
+                base64_data = base64.b64encode(file_data).decode('utf-8')
+                settings.shop_logo = f'data:{mime_type};base64,{base64_data}'
         
         settings.shop_name = form.shop_name.data
         settings.shop_tagline = form.shop_tagline.data
@@ -884,16 +880,21 @@ def add_advertisement():
         if form.media_file.data:
             file = form.media_file.data
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
-                filename = timestamp + filename
-                
-                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'ads')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                file_path = os.path.join(upload_folder, filename)
-                file.save(file_path)
-                media_url = f'/static/uploads/ads/{filename}'
+                import base64
+                file_data = file.read()
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                if file_ext in ['jpg', 'jpeg']:
+                    mime_type = 'image/jpeg'
+                elif file_ext in ['png', 'gif', 'webp']:
+                    mime_type = f'image/{file_ext}'
+                elif file_ext in ['mp4', 'webm']:
+                    mime_type = f'video/{file_ext}'
+                elif file_ext == 'mov':
+                    mime_type = 'video/quicktime'
+                else:
+                    mime_type = 'application/octet-stream'
+                base64_data = base64.b64encode(file_data).decode('utf-8')
+                media_url = f'data:{mime_type};base64,{base64_data}'
             else:
                 flash('Invalid file type. Allowed: png, jpg, jpeg, gif, webp, mp4, webm, mov', 'error')
                 return render_template('admin/advertisement_form.html', form=form, title='Add Advertisement')
@@ -934,16 +935,21 @@ def edit_advertisement(id):
         if form.media_file.data:
             file = form.media_file.data
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
-                filename = timestamp + filename
-                
-                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'ads')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                file_path = os.path.join(upload_folder, filename)
-                file.save(file_path)
-                ad.media_url = f'/static/uploads/ads/{filename}'
+                import base64
+                file_data = file.read()
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                if file_ext in ['jpg', 'jpeg']:
+                    mime_type = 'image/jpeg'
+                elif file_ext in ['png', 'gif', 'webp']:
+                    mime_type = f'image/{file_ext}'
+                elif file_ext in ['mp4', 'webm']:
+                    mime_type = f'video/{file_ext}'
+                elif file_ext == 'mov':
+                    mime_type = 'video/quicktime'
+                else:
+                    mime_type = 'application/octet-stream'
+                base64_data = base64.b64encode(file_data).decode('utf-8')
+                ad.media_url = f'data:{mime_type};base64,{base64_data}'
         elif form.media_url.data:
             ad.media_url = form.media_url.data
         
