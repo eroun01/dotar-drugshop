@@ -719,7 +719,8 @@ def import_drugs():
             return redirect(url_for('admin.import_drugs'))
         
         try:
-            stream = io.StringIO(file.stream.read().decode('utf-8'))
+            content = file.stream.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+            stream = io.StringIO(content, newline='')
             reader = csv.DictReader(stream)
             
             imported = 0
@@ -770,7 +771,8 @@ def import_customers():
             return redirect(url_for('admin.import_customers'))
         
         try:
-            stream = io.StringIO(file.stream.read().decode('utf-8'))
+            content = file.stream.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+            stream = io.StringIO(content, newline='')
             reader = csv.DictReader(stream)
             
             imported = 0
